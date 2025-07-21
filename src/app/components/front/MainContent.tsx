@@ -56,7 +56,21 @@ export default function MainContent() {
                 <h2 className="text-2xl font-semibold mb-6">New Uploads</h2>
 
                 {loading ? (
-                    <p className="text-gray-400">Loading songs...</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-5">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="bg-[#1a1a1a] p-4 rounded-xl animate-pulse space-y-4"
+                            >
+                                <div className="h-32 w-full bg-neutral-700 rounded-md" />
+                                <div className="space-y-2">
+                                    <div className="h-4 bg-neutral-700 rounded w-3/4" />
+                                    <div className="h-3 bg-neutral-800 rounded w-1/2" />
+                                </div>
+                                <div className="h-8 w-8 bg-neutral-600 rounded-full ml-auto" />
+                            </div>
+                        ))}
+                    </div>
                 ) : songs.length === 0 ? (
                     <p className="text-gray-500">No songs uploaded yet.</p>
                 ) : (

@@ -42,7 +42,6 @@ export default function PlayerBar() {
     trackMouse: true,
   });
 
-  // Handle play/pause and volume
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
