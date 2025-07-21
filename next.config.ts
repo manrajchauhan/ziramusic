@@ -1,24 +1,27 @@
-import type { NextConfig } from "next";
+// next.config.js
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+});
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "i.pravatar.cc",
         port: "",
-        pathname: "/**", // For avatar images
+        pathname: "/**",
       },
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
         port: "",
-        pathname: "/**", // For your Cloudinary-hosted MP3 thumbnails
+        pathname: "/**",
       },
     ],
   },
 };
 
-export default nextConfig;
+module.exports = withPWA(nextConfig);

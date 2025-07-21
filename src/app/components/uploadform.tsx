@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useRef, ChangeEvent, FormEvent } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function SlothUploadForm() {
+  const queryClient = useQueryClient();
+
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -11,14 +14,40 @@ export default function SlothUploadForm() {
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
   const [dragImage, setDragImage] = useState(false);
   const [dragAudio, setDragAudio] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const inputImageRef = useRef<HTMLInputElement>(null);
   const inputAudioRef = useRef<HTMLInputElement>(null);
 
-  // Drag handlers simplified for clarity
+  const uploadSong = async (formData: FormData) => {
+    const res = await fetch('/api/songs/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    return data;
+  };
+
+  const {
+    mutate: upload,
+    isPending: loading,
+    isSuccess,
+    isError,
+    error,
+    reset,
+  } = useMutation({
+    mutationFn: uploadSong,
+    onSuccess: () => {
+      setTitle('');
+      setArtist('');
+      setImageFile(null);
+      setAudioFile(null);
+      setImagePreview(null);
+      setAudioPreview(null);
+      queryClient.invalidateQueries({ queryKey: ['songs'] });
+    },
+  });
+
   function handleDrag(e: React.DragEvent, forImage: boolean) {
     e.preventDefault();
     e.stopPropagation();
@@ -28,58 +57,45 @@ export default function SlothUploadForm() {
       forImage ? setDragImage(false) : setDragAudio(false);
     }
   }
+
   function handleDrop(e: React.DragEvent, forImage: boolean) {
     e.preventDefault();
     e.stopPropagation();
-    const files = e.dataTransfer.files;
-    if (!files.length) return;
-    const file = files[0];
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
     if (forImage) {
-      if (!file.type.startsWith('image/')) {
-        setError('Please upload a valid image file');
-        return;
-      }
+      if (!file.type.startsWith('image/')) return;
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
       setDragImage(false);
     } else {
-      if (!file.type.startsWith('audio/')) {
-        setError('Please upload a valid audio file');
-        return;
-      }
+      if (!file.type.startsWith('audio/')) return;
       setAudioFile(file);
       setAudioPreview(URL.createObjectURL(file));
       setDragAudio(false);
     }
-    setError('');
   }
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
-    setError('');
   };
+
   const handleAudioChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (!file) return;
     setAudioFile(file);
     setAudioPreview(URL.createObjectURL(file));
-    setError('');
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    reset();
 
-    if (!title.trim() || !artist.trim() || !imageFile || !audioFile) {
-      setError('All fields and files are required.');
-      return;
-    }
-
-    setLoading(true);
+    if (!title.trim() || !artist.trim() || !imageFile || !audioFile) return;
 
     const formData = new FormData();
     formData.append('title', title);
@@ -87,195 +103,164 @@ export default function SlothUploadForm() {
     formData.append('image', imageFile);
     formData.append('audio', audioFile);
 
-    try {
-      const res = await fetch('/api/songs/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Upload failed');
-      } else {
-        setSuccess('Song uploaded successfully!');
-        setTitle('');
-        setArtist('');
-        setImageFile(null);
-        setAudioFile(null);
-        setImagePreview(null);
-        setAudioPreview(null);
-      }
-    } catch {
-      setError('Something went wrong');
-    } finally {
-      setLoading(false);
-    }
+    upload(formData);
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-[520px] mx-auto bg-white rounded-[24px] shadow-[0_8px_40px_rgba(0,0,0,0.1)] p-8 space-y-8 font-satoshi"
+      className="max-w-5xl mx-auto bg-[#121212] rounded-[24px] p-10 font-satoshi space-y-8 text-gray-300"
       noValidate
     >
-      <h1 className="text-[32px] font-semibold text-center leading-[40px] text-[#242424]">
+      <h1 className="text-[32px] font-semibold text-center leading-[40px] text-white">
         Upload Your Music
       </h1>
 
-      {(error || success) && (
+      {(isError || isSuccess) && (
         <p
           className={`text-center font-semibold py-2 rounded-lg ${
-            error ? 'bg-[#FFEEE6] text-[#FF4C1E]' : 'bg-[#E6FAF9] text-[#16A085]'
+            isError
+              ? 'bg-[#5c1f19] text-[#ff4c1e]'
+              : 'bg-[#003822] text-[#00A63E]'
           }`}
         >
-          {error || success}
+          {isError
+            ? (error as Error)?.message || 'Upload failed'
+            : 'Song uploaded successfully!'}
         </p>
       )}
 
-      <div className="space-y-6">
-        <label
-          htmlFor="title"
-          className="block text-[14px] font-semibold uppercase text-[#8B8B8B] tracking-[1.2px]"
-        >
-          Song Title
-        </label>
-        <input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter your song title"
-          className="w-full px-6 py-4 rounded-[12px] border border-[#E1E1E1] text-[16px] placeholder:text-[#C1C1C1] focus:outline-none focus:border-[#6C63FF] focus:ring-1 focus:ring-[#6C63FF] transition"
-          maxLength={100}
-          required
-        />
-      </div>
+      <div className="flex flex-col md:flex-row gap-10">
+        {/* Left Column */}
+        <div className="flex-1 space-y-6">
+          <div>
+            <label className="block text-[14px] font-semibold uppercase text-gray-400 tracking-[1.2px]">
+              Song Title
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter your song title"
+              className="w-full px-6 py-4 rounded-[12px] border border-gray-700 bg-[#181818] text-white placeholder-gray-500 focus:outline-none focus:border-[#00A63E] focus:ring-1 focus:ring-[#00A63E] transition"
+              maxLength={100}
+              required
+            />
+          </div>
 
-      <div className="space-y-6">
-        <label
-          htmlFor="artist"
-          className="block text-[14px] font-semibold uppercase text-[#8B8B8B] tracking-[1.2px]"
-        >
-          Artist Name
-        </label>
-        <input
-          id="artist"
-          type="text"
-          value={artist}
-          onChange={(e) => setArtist(e.target.value)}
-          placeholder="Enter artist name"
-          className="w-full px-6 py-4 rounded-[12px] border border-[#E1E1E1] text-[16px] placeholder:text-[#C1C1C1] focus:outline-none focus:border-[#6C63FF] focus:ring-1 focus:ring-[#6C63FF] transition"
-          maxLength={100}
-          required
-        />
-      </div>
+          <div>
+            <label className="block text-[14px] font-semibold uppercase text-gray-400 tracking-[1.2px]">
+              Artist Name
+            </label>
+            <input
+              type="text"
+              value={artist}
+              onChange={(e) => setArtist(e.target.value)}
+              placeholder="Enter artist name"
+              className="w-full px-6 py-4 rounded-[12px] border border-gray-700 bg-[#181818] text-white placeholder-gray-500 focus:outline-none focus:border-[#00A63E] focus:ring-1 focus:ring-[#00A63E] transition"
+              maxLength={100}
+              required
+            />
+          </div>
 
-      {/* Image Dropzone */}
-      <div
-        onDragEnter={(e) => handleDrag(e, true)}
-        onDragOver={(e) => handleDrag(e, true)}
-        onDragLeave={(e) => handleDrag(e, true)}
-        onDrop={(e) => handleDrop(e, true)}
-        onClick={() => inputImageRef.current?.click()}
-        className={`relative cursor-pointer rounded-[20px] border-2 border-dashed p-10 flex flex-col items-center justify-center gap-4 transition-colors ${
-          dragImage ? 'border-[#6C63FF] bg-[#F7F6FF]' : 'border-[#DFDFDF]'
-        }`}
-      >
-        {imagePreview ? (
-          <img
-            src={imagePreview}
-            alt="Cover preview"
-            className="max-h-[150px] rounded-lg object-contain"
-          />
-        ) : (
-          <>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="56"
-              height="56"
-              fill="none"
-              viewBox="0 0 56 56"
-              className="stroke-[#6C63FF]"
-            >
-              <circle cx="28" cy="28" r="27" strokeWidth="2" />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M14 28l10 10 18-18"
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-4 rounded-[20px] bg-[#00A63E] text-white text-[16px] font-semibold tracking-wide hover:bg-[#008330] transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Uploading...' : 'Upload Song'}
+          </button>
+        </div>
+
+        {/* Right Column */}
+        <div className="flex-1 space-y-6">
+          {/* Image */}
+          <div
+            onDragEnter={(e) => handleDrag(e, true)}
+            onDragOver={(e) => handleDrag(e, true)}
+            onDragLeave={(e) => handleDrag(e, true)}
+            onDrop={(e) => handleDrop(e, true)}
+            className={`relative cursor-pointer rounded-[20px] border-2 border-dashed p-8 flex flex-col items-center justify-center gap-4 transition-colors ${
+              dragImage ? 'border-[#00A63E] bg-[#003822]' : 'border-gray-700 bg-[#181818]'
+            }`}
+          >
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="max-h-[150px] rounded-lg object-contain"
               />
-            </svg>
-            <p className="text-[#6C63FF] font-semibold text-[14px] tracking-[1.2px] uppercase select-none">
-              Drag & drop cover image or click to upload
-            </p>
-          </>
-        )}
-        <input
-          type="file"
-          accept="image/*"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          ref={inputImageRef}
-          onChange={handleImageChange}
-          required={!imagePreview}
-        />
-      </div>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="56"
+                  height="56"
+                  fill="none"
+                  viewBox="0 0 56 56"
+                  className="stroke-[#00A63E]"
+                >
+                  <circle cx="28" cy="28" r="27" strokeWidth="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 28l10 10 18-18" />
+                </svg>
+                <p className="text-[#00A63E] font-semibold text-[14px] text-center tracking-[1.2px] uppercase select-none">
+                  Drag & drop cover image or click to upload
+                </p>
+              </>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              ref={inputImageRef}
+              onChange={handleImageChange}
+              required={!imagePreview}
+            />
+          </div>
 
-      {/* Audio Dropzone */}
-      <div
-        onDragEnter={(e) => handleDrag(e, false)}
-        onDragOver={(e) => handleDrag(e, false)}
-        onDragLeave={(e) => handleDrag(e, false)}
-        onDrop={(e) => handleDrop(e, false)}
-        onClick={() => inputAudioRef.current?.click()}
-        className={`relative cursor-pointer rounded-[20px] border-2 border-dashed p-10 flex flex-col items-center justify-center gap-4 transition-colors ${
-          dragAudio ? 'border-[#6C63FF] bg-[#F7F6FF]' : 'border-[#DFDFDF]'
-        }`}
-      >
-        {audioPreview ? (
-          <audio controls className="w-full max-w-xs outline-none">
-            <source src={audioPreview} />
-            Your browser does not support the audio element.
-          </audio>
-        ) : (
-          <>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="56"
-              height="56"
-              fill="none"
-              viewBox="0 0 56 56"
-              className="stroke-[#6C63FF]"
-            >
-              <circle cx="28" cy="28" r="27" strokeWidth="2" />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M20 22v12l12-6-12-6z"
-              />
-            </svg>
-            <p className="text-[#6C63FF] font-semibold text-[14px] tracking-[1.2px] uppercase select-none">
-              Drag & drop audio file or click to upload
-            </p>
-          </>
-        )}
-        <input
-          type="file"
-          accept="audio/*"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          ref={inputAudioRef}
-          onChange={handleAudioChange}
-          required={!audioPreview}
-        />
+          {/* Audio */}
+          <div
+            onDragEnter={(e) => handleDrag(e, false)}
+            onDragOver={(e) => handleDrag(e, false)}
+            onDragLeave={(e) => handleDrag(e, false)}
+            onDrop={(e) => handleDrop(e, false)}
+            className={`relative cursor-pointer rounded-[20px] border-2 border-dashed p-8 flex flex-col items-center justify-center gap-4 transition-colors ${
+              dragAudio ? 'border-[#00A63E] bg-[#003822]' : 'border-gray-700 bg-[#181818]'
+            }`}
+          >
+            {audioPreview ? (
+              <audio controls className="w-full max-w-xs outline-none">
+                <source src={audioPreview} />
+              </audio>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="56"
+                  height="56"
+                  fill="none"
+                  viewBox="0 0 56 56"
+                  className="stroke-[#00A63E]"
+                >
+                  <circle cx="28" cy="28" r="27" strokeWidth="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 22v12l12-6-12-6z" />
+                </svg>
+                <p className="text-[#00A63E] font-semibold text-[14px] text-center tracking-[1.2px] uppercase select-none">
+                  Drag & drop audio file or click to upload
+                </p>
+              </>
+            )}
+            <input
+              type="file"
+              accept="audio/*"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              ref={inputAudioRef}
+              onChange={handleAudioChange}
+              required={!audioPreview}
+            />
+          </div>
+        </div>
       </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-4 rounded-[20px] bg-[#6C63FF] text-white text-[16px] font-semibold tracking-wide hover:bg-[#574fd9] transition disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Uploading...' : 'Upload Song'}
-      </button>
     </form>
   );
 }
