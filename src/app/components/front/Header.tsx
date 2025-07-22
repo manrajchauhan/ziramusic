@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Menu, Search, ChevronDown } from "lucide-react";
 import Image from "next/image";
-import UserModal from "../front/modals/userModal";
-
+import UserModal from "@/app/components/front/modals/userModal";
+import Link from "next/link";
 type HeaderProps = {
   onToggleSidebar: () => void;
 };
@@ -34,9 +34,11 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
         >
           <Menu size={20} className="text-white" />
         </button>
-        <div className="hidden sm:block text-white font-semibold text-lg tracking-tight">
+        <Link
+        href={"/"}
+        className="hidden sm:block text-white font-semibold text-lg tracking-tight">
           ZIRA
-        </div>
+        </Link>
       </div>
 
       {/* Center: Search */}

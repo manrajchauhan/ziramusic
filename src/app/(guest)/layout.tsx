@@ -3,10 +3,13 @@
 import { useState } from "react";
 import Sidebar from "@/app/components/front/Sidebar";
 import Header from "@/app/components/front/Header";
-import MainContent from "@/app/components/front/MainContent";
 import PlayerBar from "@/app/components/front/PlayerBar";
 
-export default function HomePage() {
+export default function GuestLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -31,13 +34,10 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Main Content Area */}
       <div className="flex flex-col flex-1">
         <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="flex-1 overflow-y-auto">
-          <MainContent />
-        </main>
-         <PlayerBar />
+        <main className="flex-1 overflow-y-auto">{children}</main>
+        <PlayerBar />
       </div>
     </div>
   );

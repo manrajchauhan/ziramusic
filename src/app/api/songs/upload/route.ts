@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       artist,
       image_url,
       audio_url,
-      uploaded_by: 'Manraj Chauhan',
+    //   uploaded_by: 'Manraj Chauhan',
     };
 
     const { error } = await supabase.from('songs').insert([payload]);

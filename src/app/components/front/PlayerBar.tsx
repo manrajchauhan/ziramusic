@@ -88,7 +88,7 @@ export default function PlayerBar() {
         {...swipeHandlers}
       >
         {/* Top Controls */}
-        <div className="flex items-center justify-between h-20 px-4">
+        <div className="flex items-center justify-between h-20 px-6">
           {/* Song Info */}
           <div className="flex items-center gap-4 min-w-0">
             {currentSong ? (
@@ -100,7 +100,7 @@ export default function PlayerBar() {
                   height={48}
                   className="rounded-md object-cover"
                 />
-                <div className="truncate">
+                <div className="truncate md:block hidden">
                   <div className="font-semibold text-sm truncate">{currentSong.title}</div>
                   <div className="text-xs text-gray-400 truncate">{currentSong.artist}</div>
                 </div>
@@ -111,7 +111,7 @@ export default function PlayerBar() {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center md:gap-6 gap-2">
             <button disabled className="opacity-50 cursor-not-allowed">
               <SkipBack size={20} />
             </button>
@@ -156,7 +156,7 @@ export default function PlayerBar() {
                 setVolume(v);
                 setIsMuted(v === 0);
               }}
-              className="w-20 h-1 bg-gray-500 rounded-lg appearance-none accent-green-500"
+              className="w-20 h-1 bg-gray-500 rounded-lg appearance-none accent-green-500 cursor-pointer"
             />
 
             <button onClick={() => setIsFullscreen(true)}>
@@ -166,7 +166,7 @@ export default function PlayerBar() {
         </div>
 
         {/* Progress Bar */}
-        <div className="flex items-center text-xs text-gray-400 px-4 pb-2 gap-2">
+        <div className="flex items-center text-xs text-gray-400 px-4 pb-2 gap-2 mx-auto max-w-lg mb-1">
           <span className="w-10 text-right">{formatTime(progress)}</span>
           <input
             type="range"
@@ -175,7 +175,7 @@ export default function PlayerBar() {
             step={0.1}
             value={progress}
             onChange={handleSeek}
-            className="flex-1 h-1 accent-green-500 appearance-none bg-neutral-700 rounded-md"
+            className="flex-1 h-1 accent-green-500 appearance-none bg-neutral-700 rounded-md cursor-pointer"
           />
           <span className="w-10 text-left">{formatTime(duration)}</span>
         </div>
@@ -187,14 +187,28 @@ export default function PlayerBar() {
       {/* Fullscreen Mode */}
       <AnimatePresence>
         {isFullscreen && (
-          <motion.div
-            className="fixed inset-0 bg-[#121212] z-50 text-white flex flex-col items-center justify-center"
+         <motion.div
+            className={`fixed inset-0 z-50 text-white flex flex-col items-center justify-center`}
+            style={{
+              backgroundImage: currentSong?.image_url
+                ? `url(${currentSong.image_url})`
+                : undefined,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
+            <div className="absolute inset-0 backdrop-blur-3xl bg-black/50" />
+            <h1
+              className="absolute top-10 left-10 text-xl tracking-tighter font-medium"
+            >
+             Now Playing
+            </h1>
+
             <button
-              className="absolute top-4 right-4"
+              className="absolute top-10 right-10"
               onClick={() => setIsFullscreen(false)}
               aria-label="Close"
             >
@@ -208,16 +222,17 @@ export default function PlayerBar() {
                   alt={currentSong.title}
                   width={300}
                   height={300}
-                  className="rounded-xl object-cover mb-6 shadow-2xl"
+                  className="rounded-xl object-cover mb-6 shadow-2xl z-50 "
                 />
-                <h2 className="text-2xl font-semibold">{currentSong.title}</h2>
-                <p className="text-gray-400 mb-8">{currentSong.artist}</p>
+                <h2 className="text-2xl font-semibold text-white z-50">{currentSong.title}</h2>
+                <p className="text-gray-400 mb-8 z-50">{currentSong.artist}</p>
               </>
             ) : (
               <p className="text-gray-400 mb-8">No song selected</p>
             )}
 
-            <div className="flex items-center gap-8">
+
+            <div className="flex items-center gap-8 z-50">
               <button disabled className="opacity-50">
                 <SkipBack size={28} />
               </button>
@@ -234,6 +249,23 @@ export default function PlayerBar() {
                 <SkipForward size={28} />
               </button>
             </div>
+
+              {/* Progress Bar */}
+              <div className="md:flex items-center text-xs text-gray-400 px-4 pb-2 gap-2 mx-auto max-w-4xl mt-10 z-50">
+        <div className="flex items-center text-xs text-gray-400 px-4 gap-2 mx-auto max-w-4xl">
+          <span className="w-10 text-right">{formatTime(progress)}</span>
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step={0.1}
+            value={progress}
+            onChange={handleSeek}
+            className="flex-1 h-1 accent-green-500 appearance-none bg-neutral-700 rounded-md cursor-pointer"
+          />
+          <span className="w-10 text-left">{formatTime(duration)}</span>
+        </div>
+          </div>
           </motion.div>
         )}
       </AnimatePresence>

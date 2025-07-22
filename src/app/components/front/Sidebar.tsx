@@ -5,11 +5,12 @@ import {
   PlusSquare,
   Heart,
 } from 'lucide-react';
+import Link from 'next/link';
 
 const navItems = [
-  { icon: Home, label: 'Home', active: true },
-  { icon: Search, label: 'Search', active: false },
-  { icon: Library, label: 'Your Library', active: false },
+  { icon: Home, label: 'Home', active: true, href: '/' },
+  { icon: Search, label: 'Search', active: false , href: '/search' },
+  { icon: Library, label: 'Your Library', active: false, href: '/library' },
 ];
 
 const playlists = [
@@ -27,8 +28,9 @@ export default function Sidebar() {
     <aside className="w-64 bg-[#121212] text-sm text-gray-300 flex flex-col px-4 pt-5 pb-4 select-none">
       {/* Navigation */}
       <nav className="space-y-1 mb-6">
-        {navItems.map(({ icon: Icon, label, active }) => (
-          <button
+        {navItems.map(({ icon: Icon, label, active, href }) => (
+          <Link
+           href={href}
             key={label}
             className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg transition ${
               active
@@ -38,7 +40,7 @@ export default function Sidebar() {
           >
             <Icon size={20} className="shrink-0" />
             <span className="truncate">{label}</span>
-          </button>
+          </Link>
         ))}
       </nav>
 

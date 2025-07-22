@@ -3,6 +3,7 @@
 import { Play } from "lucide-react";
 import { usePlayerStore } from "@/app/store/playerStore";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 type Song = {
   id: string;
@@ -34,11 +35,11 @@ export default function MainContent() {
   })();
 
   const quickPlaylists = [
-    { id: 1, title: "Daily Mix 1" },
-    { id: 2, title: "Top Hits 2025" },
-    { id: 3, title: "Chill Vibes" },
-    { id: 4, title: "Workout" },
-    { id: 5, title: "Focus" },
+    { id: 1, title: "Daily Mix 1", href: "/playlist/daily-mix-1" },
+    { id: 2, title: "Top Hits 2025", href: "/playlist/top-hits-2025" },
+    { id: 3, title: "Chill Vibes", href: "/playlist/chill-vibes" },
+    { id: 4, title: "Workout", href: "/playlist/workout" },
+    { id: 5, title: "Focus", href: "/playlist/focus" },
   ];
 
   return (
@@ -102,7 +103,8 @@ export default function MainContent() {
       <section className="mb-12">
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3">
           {quickPlaylists.map(({ id, title }) => (
-            <div
+            <Link
+              href={`/playlist/${id}`}
               key={id}
               className="relative flex items-center gap-4 bg-[#1a1a1a] p-4 rounded-xl group hover:bg-[#2a2a2a] transition-colors duration-200"
             >
@@ -113,7 +115,7 @@ export default function MainContent() {
               >
                 <Play size={18} />
               </button>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
