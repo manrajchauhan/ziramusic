@@ -1,26 +1,20 @@
-import {
-  Home,
-  Search,
-  Library,
-  PlusSquare,
-  Heart,
-} from 'lucide-react';
-import Link from 'next/link';
+import { Home, Search, Library, PlusSquare, Heart } from "lucide-react";
+import Link from "next/link";
 
 const navItems = [
-  { icon: Home, label: 'Home', active: true, href: '/' },
-  { icon: Search, label: 'Search', active: false , href: '/search' },
-  { icon: Library, label: 'Your Library', active: false, href: '/library' },
+  { icon: Home, label: "Home", active: true, href: "/" },
+  { icon: Search, label: "Browse", active: false, href: "/search" },
+  { icon: Library, label: "Your Library", active: false, href: "/playlist" },
 ];
 
 const playlists = [
-  'Daily Mix 1',
-  'Top Hits 2025',
-  'Chill Vibes',
-  'Workout',
-  'Focus',
-  'Discover Weekly',
-  'RapCaviar',
+  "Daily Mix 1",
+  "Top Hits 2025",
+  "Chill Vibes",
+  "Workout",
+  "Focus",
+  "Discover Weekly",
+  "RapCaviar",
 ];
 
 export default function Sidebar() {
@@ -30,12 +24,12 @@ export default function Sidebar() {
       <nav className="space-y-1 mb-6">
         {navItems.map(({ icon: Icon, label, active, href }) => (
           <Link
-           href={href}
+            href={href}
             key={label}
             className={`group flex items-center gap-3 w-full px-3 py-2 rounded-lg transition ${
               active
-                ? 'bg-green-600 text-white font-medium'
-                : 'hover:bg-[#282828] hover:text-white'
+                ? "bg-green-600 text-white font-medium"
+                : "hover:bg-[#282828] hover:text-white"
             }`}
           >
             <Icon size={20} className="shrink-0" />

@@ -45,7 +45,7 @@ export interface Database {
           artist: string;
           image_url: string;
           audio_url: string;
-        //   uploaded_by: string;
+          //   uploaded_by: string;
           created_at?: string;
         };
         Update: {

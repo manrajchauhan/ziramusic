@@ -1,4 +1,4 @@
-import UploadSongForm from '@/app/components/uploadform';
+import UploadSongForm from "../../components/uploadform";
 
 export default function UploadPage() {
   return (

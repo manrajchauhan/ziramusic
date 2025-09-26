@@ -1,9 +1,5 @@
-import React from 'react'
+import React from "react";
 
-export default function PlaylistLib() {
-  return (
-    <div>
-      Playlist ID
-    </div>
-  )
+export default function Demo() {
+  return <div></div>;
 }

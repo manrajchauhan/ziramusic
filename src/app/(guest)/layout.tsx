@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "@/app/components/front/Sidebar";
-import Header from "@/app/components/front/Header";
-import PlayerBar from "@/app/components/front/PlayerBar";
+import Sidebar from "../components/front/Sidebar";
+import Header from "../components/front/Header";
+import PlayerBar from "../components/front/PlayerBar";
 
 export default function GuestLayout({
   children,

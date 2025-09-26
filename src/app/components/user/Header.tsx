@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Menu, Search, ChevronDown } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import Image from "next/image";
-import UserModal from "../front/modals/userModal";
+import UserModal from "../user/modals/userModal";
 
 type HeaderProps = {
   onToggleSidebar: () => void;
@@ -14,11 +14,11 @@ export default function DashboardHeader({ onToggleSidebar }: HeaderProps) {
   const userRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    const handleClickOutside = (e: MouseEvent) => {
       if (userRef.current && !userRef.current.contains(e.target as Node)) {
         setShowModal(false);
       }
-    }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -37,10 +37,7 @@ export default function DashboardHeader({ onToggleSidebar }: HeaderProps) {
       </div>
 
       {/* Right: User Info */}
-      <div
-        className="relative"
-        ref={userRef}
-      >
+      <div className="relative" ref={userRef}>
         <div
           className="flex items-center gap-2 hover:bg-[#2a2a2a] rounded-full pl-2 pr-3 py-1 cursor-pointer transition"
           onClick={() => setShowModal((prev) => !prev)}
@@ -52,11 +49,18 @@ export default function DashboardHeader({ onToggleSidebar }: HeaderProps) {
             height={32}
             className="rounded-full object-cover"
           />
-          <span className="text-sm font-medium text-white hidden sm:block">Manraj</span>
+          <span className="text-sm font-medium text-white hidden sm:block">
+            Manraj
+          </span>
           <ChevronDown size={16} className="text-gray-400" />
         </div>
 
-        {showModal && <UserModal />}
+        {/* Dropdown */}
+        {showModal && (
+          <div className="absolute right-0 mt-2">
+            <UserModal onClose={() => setShowModal(false)} />
+          </div>
+        )}
       </div>
     </header>
   );

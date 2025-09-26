@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Menu, Search, ChevronDown } from "lucide-react";
 import Image from "next/image";
-import UserModal from "@/app/components/front/modals/userModal";
+import UserModal from "../../components/front/modals/userModal";
 import Link from "next/link";
 type HeaderProps = {
   onToggleSidebar: () => void;
@@ -35,8 +35,9 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
           <Menu size={20} className="text-white" />
         </button>
         <Link
-        href={"/"}
-        className="hidden sm:block text-white font-semibold text-lg tracking-tight">
+          href={"/"}
+          className="hidden sm:block text-white font-semibold text-lg tracking-tight"
+        >
           ZIRA
         </Link>
       </div>
@@ -52,10 +53,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
       </div>
 
       {/* Right: User Info */}
-      <div
-        className="relative"
-        ref={userRef}
-      >
+      <div className="relative" ref={userRef}>
         <div
           className="flex items-center gap-2 hover:bg-[#2a2a2a] rounded-full pl-2 pr-3 py-1 cursor-pointer transition"
           onClick={() => setShowModal((prev) => !prev)}
@@ -67,7 +65,9 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
             height={32}
             className="rounded-full object-cover"
           />
-          <span className="text-sm font-medium text-white hidden sm:block">Manraj</span>
+          <span className="text-sm font-medium text-white hidden sm:block">
+            Manraj
+          </span>
           <ChevronDown size={16} className="text-gray-400" />
         </div>
 
